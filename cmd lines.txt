@@ -1,0 +1,10 @@
+#setup environment
+
+    py -3 -m venv .venv
+    .venv\scripts\activate
+
+#select interpreter
+#then install packages
+
+    pip install -U textblob
+    python -m textblob.download_corpora
