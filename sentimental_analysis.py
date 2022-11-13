@@ -1,5 +1,5 @@
 from textblob import TextBlob
-from flask import Flask, jsonify, request, send_from_directory, send_file
+from flask import Flask, jsonify, request, send_from_directory, send_file, redirect, url_for
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -21,7 +21,7 @@ headers = {  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Appl
 custom_bins = [-1.00,-0.8,-0.60,-0.40,-0.20,0.00,0.20,0.40,0.60,0.80,1.00]
 
 #the website magic
-app = Flask(__name__, static_url_path='', static_folder='public')
+app = Flask(__name__, static_folder='public')
         
 def printPage(item):
 
@@ -75,9 +75,6 @@ def printPageUK(item4):
         c.append(cleantext.clean(splitter4[1].split('on')[0],no_emoji=True))
         d.append(splitter4[1].split('on')[1])
 
-#createHistogram('analyzed_data.csv',[['Clothing ID',868],['Age',52]])
-#DEBUG:createHeatMap('analyzed_data.csv')
-
 for page in range(50):
     b.append(printPage(page+1))
     
@@ -106,17 +103,15 @@ with open('tutorial.csv', 'w', newline ='') as csvfile:
         print('DEBUG',b[num-1])
         c[num-1]
         thewriter.writerow({'number':num, 'entry':b[num-1], 'location':count, 'date':d[num-1]  })
-       
-
-    
+          
 #use textblob to get subjectivity... 
 def getSubjectivity(text):
     return TextBlob(str(text)).sentiment.subjectivity
 #..and polarity
 def getPolarity(text):
     return TextBlob(str(text)).sentiment.polarity
-#the big function that does literall everything "main"
-#@app.route('/result',methods=['GET'])
+#the big function that does literall everything: "main"
+@app.route('/histograph')
 def analyzeCSV(hyperlink:str,kv:list=[]):
 
     #read the csv, then remove all purchases with no reviews
@@ -133,8 +128,7 @@ def analyzeCSV(hyperlink:str,kv:list=[]):
     sorted_data.to_csv('analyzed_data.csv',index=False)
     
     createHistogram('analyzed_data.csv',kv)
-    
-    #########FIXME:RETURN SOMETHING############
+    createHeatMap('analyzed_data.csv',kv)
 
 #enter a csv file and filter through key-value pairs to create a histogram
 #params: csv - string of file name
@@ -199,7 +193,7 @@ def createHeatMap(csv_file:str,kv:list=[]):
     plt.xticks(range(len(custom_bins)),labels=custom_bins)
     plt.tight_layout()
     plt.savefig('analyzed_heatmap')
-    plt.show()
+    #DEBUG:plt.show()
     
 #remove all elements of dataframe df which do not have any of the values matching the keys in kv
 def filterDataFrame(df:pd.DataFrame,kv:list=[]):
